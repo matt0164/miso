@@ -18,8 +18,8 @@ def load_and_process_dataset(dataset_folder):
         pd.DataFrame: A consolidated DataFrame with data from all valid files.
     """
     try:
-        # Get all files in the dataset folder
-        files = [f for f in os.listdir(dataset_folder) if os.path.isfile(os.path.join(dataset_folder, f))]
+        # Get all CSV files in the dataset folder
+        files = [f for f in os.listdir(dataset_folder) if f.endswith(".csv")]
 
         # Initialize an empty DataFrame
         combined_data = pd.DataFrame()
@@ -28,7 +28,7 @@ def load_and_process_dataset(dataset_folder):
             file_path = os.path.join(dataset_folder, file)
             try:
                 # Load data and dynamically assign column names
-                data = pd.read_csv(file_path, encoding="utf-8", errors="replace")  # Replace invalid characters
+                data = pd.read_csv(file_path, encoding="utf-8")  # Handle proper encoding
                 column_names = [f"feature_{i}" for i in range(data.shape[1])]
                 data.columns = column_names
 
@@ -48,9 +48,18 @@ def load_and_process_dataset(dataset_folder):
         return None
 
 if __name__ == "__main__":
-    # Prompt user for paths with sample paths included in the message
-    dataset_folder = input("Enter the path to the cleaned dataset folder (e.g., C:\\Users\\matt0\\PycharmProjects\\miso\\Audio Files\\Audio Files\\Clips): ").strip()
-    output_file = input("Enter the path to save the processed dataset (e.g., C:\\Users\\matt0\\PycharmProjects\\miso\\Audio Files\\processed_dataset.csv): ").strip()
+    # Default paths
+    default_dataset_folder = "C:\\Users\\matt0\\PycharmProjects\\miso\\Audio Files\\Audio Files\\Clips"
+    default_output_file = "C:\\Users\\matt0\\PycharmProjects\\miso\\Audio Files\\processed_dataset.csv"
+
+    # Prompt user for paths with option to use defaults
+    dataset_folder = input(f"Enter the path to the cleaned dataset folder (default: {default_dataset_folder}): ").strip()
+    if not dataset_folder:
+        dataset_folder = default_dataset_folder
+
+    output_file = input(f"Enter the path to save the processed dataset (default: {default_output_file}): ").strip()
+    if not output_file:
+        output_file = default_output_file
 
     # Load and process dataset
     processed_data = load_and_process_dataset(dataset_folder)

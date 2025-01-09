@@ -1,61 +1,61 @@
-import pandas as pd
+# This script processes a dataset by reading all valid files from a folder, dynamically assigning column names,
+# consolidating labels into a single DataFrame, and saving the processed data to a CSV file.
+
+# A DataFrame is a 2-dimensional labeled data structure provided by the pandas library, similar to a table in a database.
+# It allows easy manipulation, analysis, and visualization of structured data.
+
 import os
+import pandas as pd
 
-# Paths
-file_path = r"C:\Users\matt0\PycharmProjects\miso\Audio Files\CSV Directories\balanced_train_segments.csv"
-output_dir = r"C:\Users\matt0\PycharmProjects\miso\Audio Files\Audio Files\Clips"  # Corrected directory
-filtered_csv = r"C:\Users\matt0\PycharmProjects\miso\Audio Files\CSV Directories\filtered_audioset_clips.csv"
-valid_csv = r"C:\Users\matt0\PycharmProjects\miso\Audio Files\CSV Directories\valid_audioset_clips.csv"
+def load_and_process_dataset(dataset_folder):
+    """
+    Loads and processes all valid dataset files in a given folder.
 
-# Load the full dataset
-metadata = pd.read_csv(file_path, comment="#", header=None, on_bad_lines="skip")
+    Parameters:
+        dataset_folder (str): Path to the folder containing the dataset files.
 
-# Dynamically assign column names
-num_columns = metadata.shape[1]
-column_names = ["YouTubeID", "Start", "End"] + [f"Labels{i}" for i in range(1, num_columns - 2)]
-metadata.columns = column_names
+    Returns:
+        pd.DataFrame: A consolidated DataFrame with data from all valid files.
+    """
+    try:
+        # Get all files in the dataset folder
+        files = [f for f in os.listdir(dataset_folder) if os.path.isfile(os.path.join(dataset_folder, f))]
 
-# Consolidate all label columns into a single column
-metadata["Labels"] = metadata.iloc[:, 3:].apply(
-    lambda x: ", ".join(filter(pd.notnull, x)), axis=1
-)
+        # Initialize an empty DataFrame
+        combined_data = pd.DataFrame()
 
-# Define misophonia-related ontology IDs
-target_labels = ["/m/09x0r", "/m/03fwl", "/m/012xff"]
+        for file in files:
+            file_path = os.path.join(dataset_folder, file)
+            try:
+                # Load data and dynamically assign column names
+                data = pd.read_csv(file_path, encoding="utf-8", errors="replace")  # Replace invalid characters
+                column_names = [f"feature_{i}" for i in range(data.shape[1])]
+                data.columns = column_names
 
-# Filter clips containing target labels
-filtered_metadata = metadata[metadata["Labels"].str.contains("|".join(target_labels), na=False)]
-filtered_metadata = filtered_metadata.copy()  # Avoid SettingWithCopyWarning
+                # Consolidate label columns into a single frame (adjust as needed)
+                if "label" in data.columns:
+                    combined_data = pd.concat([combined_data, data], ignore_index=True)
+                else:
+                    print(f"No 'label' column in {file}, skipping...")
 
-# Save the filtered dataset
-filtered_metadata.to_csv(filtered_csv, index=False)
-print(f"Filtered metadata saved at: {filtered_csv}")
+            except Exception as file_error:
+                print(f"Error reading file {file_path}: {file_error}")
 
-# Check files in Clips directory
-clip_files = os.listdir(output_dir)
-print(f"Files in Clips directory: {clip_files[:10]}")  # Debug: Show a sample of files
+        print("Data processing complete.")
+        return combined_data
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return None
 
-# Add ClipPath and check if files exist
-for index, row in filtered_metadata.iterrows():
-    youtube_id = row['YouTubeID']
-    start_time = f"{float(row['Start']):.1f}"  # Always include one decimal place
-    end_time = f"{float(row['End']):.1f}"
+if __name__ == "__main__":
+    # Prompt user for paths with sample paths included in the message
+    dataset_folder = input("Enter the path to the cleaned dataset folder (e.g., C:\\Users\\matt0\\PycharmProjects\\miso\\Audio Files\\Audio Files\\Clips): ").strip()
+    output_file = input("Enter the path to save the processed dataset (e.g., C:\\Users\\matt0\\PycharmProjects\\miso\\Audio Files\\processed_dataset.csv): ").strip()
 
-    # Construct the expected clip path
-    clip_path = os.path.join(output_dir, f"{youtube_id}_{start_time}-{end_time}.mp3")
-    exists = os.path.exists(clip_path)
+    # Load and process dataset
+    processed_data = load_and_process_dataset(dataset_folder)
 
-    # Debug: Print constructed path and closest matches
-    print(f"Checking: {clip_path} - Exists: {exists}")
-    closest_matches = [file for file in clip_files if youtube_id in file]
-    print(f"Closest matches in directory: {closest_matches}")
-
-    filtered_metadata.loc[index, 'ClipPath'] = clip_path if exists else None
-
-# Filter for rows where the audio file exists
-valid_clips = filtered_metadata[filtered_metadata['ClipPath'].notnull()]
-print(f"Number of valid clips: {len(valid_clips)}")
-
-# Save the final valid dataset
-valid_clips.to_csv(valid_csv, index=False)
-print(f"Filtered dataset with valid audio files saved at: {valid_csv}")
+    # Save the processed data as a CSV
+    if processed_data is not None:
+        processed_data.to_csv(output_file, index=False)
+        print(f"Processed dataset saved as '{output_file}'.")

@@ -49,6 +49,9 @@ def load_and_process_dataset(dataset_folder):
 
 if __name__ == "__main__":
     # Default paths
+    # for mac need to adjust and replace with your path
+    # for mac - standard format is : /Users/<your-username>/Desktop/miso audio/balanced_train_segments.csv
+
     default_dataset_folder = "C:\\Users\\matt0\\PycharmProjects\\miso\\Audio Files\\Audio Files\\Clips"
     default_output_file = "C:\\Users\\matt0\\PycharmProjects\\miso\\Audio Files\\processed_dataset.csv"
 

@@ -52,8 +52,8 @@ if __name__ == "__main__":
     # for mac need to adjust and replace with your path
     # for mac - standard format is : /Users/<your-username>/Desktop/miso audio/balanced_train_segments.csv
 
-    default_dataset_folder = "C:\\Users\\matt0\\PycharmProjects\\miso\\Audio Files\\Audio Files\\Clips"
-    default_output_file = "C:\\Users\\matt0\\PycharmProjects\\miso\\Audio Files\\processed_dataset.csv"
+    default_dataset_folder = "/Users/cameronalevy/Documents/research miso/audio clips/clips"
+    default_output_file = "/Users/cameronalevy/Documents/research miso/audio clips/processed_dataset.csv"
 
     # Prompt user for paths with option to use defaults
     dataset_folder = input(f"Enter the path to the cleaned dataset folder (default: {default_dataset_folder}): ").strip()

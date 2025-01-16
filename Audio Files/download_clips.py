@@ -50,9 +50,8 @@ for csv_file in csv_files:
             "--audio-format", "wav",
             "--output", output_file,
             "--postprocessor-args", f"ffmpeg:-ss {start_time} -to {end_time}"
-            "--cookies", "path/to/cookies.txt" #this is a new line to pass the cookies from browser to prevent bot blocking
+            "--cookies", "/Users/cameronalevy/Documents/research miso/cookies.txt" #new line passes login cookies from browser to prevent bot blocking
         ]
-
         print(f"Downloading {output_file}...")
         try:
             subprocess.run(command, check=True)

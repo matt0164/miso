@@ -1,36 +1,30 @@
 import os
+import glob
 import pandas as pd
 import librosa
 from librosa import feature as lf
 
-# Paths to the audio files
-control_path = '/Users/cameronalevy/Documents/research miso/audio clips/Clips/control/rainfall.wav'
-misophonia_path = "/Users/cameronalevy/Documents/research miso/audio clips/Clips/gum chewing/gum_chewing.wav"
+#path to audio files
+audio_directory = '/Users/cameronalevy/Documents/research miso/audio clips/Clips'
 
-# List to store the extracted features
+#list to store the extracted features
 data = []
 
-# Function to extract features from an audio file
+#extract features from audio file
 def extract_features(file_path):
     print(f"extract_features started with {file_path}")
-    #real extraction
-    try:
-        #Load the audio file
-        if not os.path.exists(file_path):
-            print(f"File not found: {file_path}")
-            return None
-        print("file exists")
 
+    try:
         y, sr = librosa.load(file_path, sr=None)
         print("audio loaded")
 
-        #Extract features
+        #extract features
         duration = librosa.get_duration(y=y, sr=sr)
         rms = lf.rms(y=y).mean()
         zcr = lf.zero_crossing_rate(y).mean()
         spectral_centroid = lf.spectral_centroid(y=y, sr=sr).mean()
 
-        #Return features as a dictionary
+        #return features as dictionary
         return {
             'file_path': file_path,
             'duration': duration,
@@ -42,24 +36,20 @@ def extract_features(file_path):
         print(f"Error processing {file_path}: {e}")
         return None
 
-# Extract features from each file
-control_features = extract_features(control_path)
-misophonia_features = extract_features(misophonia_path)
+#iterates over all audio files in the directory
+for file_path in glob.glob(os.path.join(audio_directory, '**', '*.wav'), recursive=True):
+    features = extract_features(file_path)
+    if features:
+        data.append(features)
 
-# Append features to the data list
-if control_features:
-    data.append(control_features)
-if misophonia_features:
-   data.append(misophonia_features)
-
-# Create a DataFrame
+#create dataframe
 df = pd.DataFrame(data)
 
-# Check if DataFrame is empty
+#check if dataframe is empty
 if df.empty:
     print("No features were extracted. Check the audio file paths or formats.")
 else:
-    # Save the DataFrame to a CSV file
+    #save the dataframe to a CSV file
     output_csv_path = '/Users/cameronalevy/Documents/research miso/audio_analysis.csv'
     df.to_csv(output_csv_path, index=False)
     print(f"Features extracted and saved to {output_csv_path}")
